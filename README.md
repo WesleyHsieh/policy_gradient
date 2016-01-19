@@ -4,7 +4,6 @@ Python implementation of policy gradient reinforcement learning methods, built o
 
 ## Installation 
 
-sudo pip install policy_gradient
-
+pip install -i https://testpypi.python.org/pypi policy_gradient
 
 
