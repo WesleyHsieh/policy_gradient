@@ -34,10 +34,6 @@ class Testbed:
 		action: array-like
 			Action taken from given state.
 		"""
-		# print self.A.shape
-		# print state.shape
-		# print self.B.shape
-		# print action.shape
 		next_state = np.dot(self.A, state) + np.dot(self.B, action) #+ np.random.normal(loc=0.0, scale=1.0, size=state.shape)
 		return next_state
 
@@ -72,7 +68,8 @@ class Testbed:
 		
 		mean_rewards = []
 		for i in range(iters):
-			trajs = []
+			traj_states = []
+			traj_actions = []
 			rewards = []
 			for j in range(iter_len):
 				states = []
@@ -94,11 +91,12 @@ class Testbed:
 					curr_state = self.calculate_next_state(curr_state, curr_action)
 
 				# Append trajectory/rewards
-				trajs.append(zip(states, actions))
+				traj_states.append(states)
+				traj_actions.append(actions)
 				rewards.append(curr_rewards)
 
 			# Apply policy gradient iteration
-			self.learner.gradient_update(np.array(trajs), np.array(rewards))
+			self.learner.gradient_update(np.array(traj_states), np.array(traj_actions), np.array(rewards))
 			mean_rewards.append(np.mean([reward_list[-1] for reward_list in rewards]))
 
 		mean_rewards = -np.array(mean_rewards)
