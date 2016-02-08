@@ -1,56 +1,255 @@
-<!DOCTYPE html>
-<html lang="en-us">
+<!doctype html>
+<html>
   <head>
-    <meta charset="UTF-8">
-    <title>Policy Gradient by WesleyHsieh</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Policy Gradient</h1>
-      <h2 class="project-tagline"></h2>
-      <a href="https://github.com/WesleyHsieh/policy_gradient" class="btn">View on GitHub</a>
-      <a href="https://github.com/WesleyHsieh/policy_gradient/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/WesleyHsieh/policy_gradient/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>API Reference</title>
 
-    <section class="main-content">
-      <h3>
-<a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight, .highlight .w {
+  color: #f8f8f2;
+  background-color: #272822;
+}
+.highlight .err {
+  color: #151515;
+  background-color: #ac4142;
+}
+.highlight .c, .highlight .cd, .highlight .cm, .highlight .c1, .highlight .cs {
+  color: #505050;
+}
+.highlight .cp {
+  color: #f4bf75;
+}
+.highlight .nt {
+  color: #f4bf75;
+}
+.highlight .o, .highlight .ow {
+  color: #d0d0d0;
+}
+.highlight .p, .highlight .pi {
+  color: #d0d0d0;
+}
+.highlight .gi {
+  color: #90a959;
+}
+.highlight .gd {
+  color: #ac4142;
+}
+.highlight .gh {
+  color: #6a9fb5;
+  background-color: #151515;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kv {
+  color: #aa759f;
+}
+.highlight .kc {
+  color: #d28445;
+}
+.highlight .kt {
+  color: #d28445;
+}
+.highlight .kd {
+  color: #d28445;
+}
+.highlight .s, .highlight .sb, .highlight .sc, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .s1 {
+  color: #90a959;
+}
+.highlight .sr {
+  color: #75b5aa;
+}
+.highlight .si {
+  color: #8f5536;
+}
+.highlight .se {
+  color: #8f5536;
+}
+.highlight .nn {
+  color: #f4bf75;
+}
+.highlight .nc {
+  color: #f4bf75;
+}
+.highlight .no {
+  color: #f4bf75;
+}
+.highlight .na {
+  color: #6a9fb5;
+}
+.highlight .m, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mb, .highlight .mx {
+  color: #90a959;
+}
+.highlight .ss {
+  color: #90a959;
+}
+    </style>
+    <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all.js"></script>
+  </head>
+
+  <body class="index" data-languages="[&quot;python&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" />
+      </span>
+    </a>
+    <div class="tocify-wrapper">
+      <img src="images/logo.png" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="python">python</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <div id="toc">
+      </div>
+        <ul class="toc-footer">
+            <li><a href='#'>Sign Up for a Developer Key</a></li>
+            <li><a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id="introduction">Introduction</h1>
 
 <p>Python implementation of policy gradient reinforcement learning methods, built on TensorFlow. Flexible reinforcement learning framework that does not require dynamics of the environment. Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters. </p>
 
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+<h1 id="installation">Installation</h1>
 
-<pre><code>pip install -i https://testpypi.python.org/pypi policy_gradient
+<p>Quick installation using the pip package manager.
+<aside class="notice">
+Dependencies: NumPy, TensorFlow, Nose
+</aside></p>
+
+<blockquote>
+<p>pip install -i https://testpypi.python.org/pypi policy_gradient</p>
+</blockquote>
+
+<h1 id="interface">Interface</h1>
+
+<p>Quick, clean interface for training a neural network using policy gradient methods.</p>
+<pre class="highlight python"><code><span class="n">learner</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="s">'tanh'</span><span class="p">)</span>
+<span class="n">learner</span><span class="o">.</span><span class="n">train_agent</span><span class="p">(</span><span class="n">dynamics_func</span><span class="p">,</span> <span class="n">reward_func</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">)</span>
+<span class="n">learner</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
 </code></pre>
 
-<h3>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h3>
+<aside class="notice">
+</aside>
 
-<pre><code>learner = PolicyGradient(net_dims=net_dims, output_function='tanh')
-learner.train_agent(dynamics_func, reward_func, initial_state)
+<aside class="success">
+Remember — a happy kitten is an authenticated kitten!
+</aside>
+
+<aside class="warning">Inside HTML code blocks like this one, you can&rsquo;t use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
+
+<h2 id="main-functions">Main Functions</h2>
+
+<h3 id="train_agent">train_agent</h3>
+
+<p>Parameters:</p>
+
+<p>dynamics_func: function
+      User-provided function that takes in 
+      a state and action, and returns the next state.</p>
+
+<p>reward_func: function
+      User-provided function that takes in 
+      a state and action, and returns the associated reward.</p>
+
+<p>initial_state: array-like
+      Initial state that each trajectory starts at.
+      Must be 1-dimensional NumPy array.</p>
+
+<p>num_iters: int
+      Number of iterations to run gradient updates.</p>
+
+<p>batch_size: int
+      Number of trajectories to run in a single iteration.</p>
+
+<p>traj_len: int
+      Number of state-action pairs in a trajectory.</p>
+
+<p>Output:
+    mean_rewards: array-like
+      Mean ending rewards of all iterations.</p>
+<pre class="highlight python"><code><span class="n">train_agent</span><span class="p">(</span><span class="n">dynamics_func</span><span class="p">)</span>
 </code></pre>
 
-<h3>
-<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h3>
+<h2 id="utility-functions">Utility Functions</h2>
 
-<h4>
-<a id="user" class="anchor" href="#user" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>User</h4>
+<p>asdfadsf</p>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/WesleyHsieh/policy_gradient">Policy Gradient</a> is maintained by <a href="https://github.com/WesleyHsieh">WesleyHsieh</a>.</span>
+          <h1 id="errors">Errors</h1>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+<aside class="notice">This error section is stored in a separate file in `includes/_errors.md`. Slate allows you to optionally separate out your docs into many files&hellip;just save them to the `includes` folder and add them to the top of your `index.md`&rsquo;s frontmatter. Files are included in the order listed.</aside>
 
-    </section>
+<p>The Kittn API uses the following error codes:</p>
 
-  
+<table><thead>
+<tr>
+<th>Error Code</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>400</td>
+<td>Bad Request &ndash; Your request sucks</td>
+</tr>
+<tr>
+<td>401</td>
+<td>Unauthorized &ndash; Your API key is wrong</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden &ndash; The kitten requested is hidden for administrators only</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found &ndash; The specified kitten could not be found</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowed &ndash; You tried to access a kitten with an invalid method</td>
+</tr>
+<tr>
+<td>406</td>
+<td>Not Acceptable &ndash; You requested a format that isn&rsquo;t json</td>
+</tr>
+<tr>
+<td>410</td>
+<td>Gone &ndash; The kitten requested has been removed from our servers</td>
+</tr>
+<tr>
+<td>418</td>
+<td>I&rsquo;m a teapot</td>
+</tr>
+<tr>
+<td>429</td>
+<td>Too Many Requests &ndash; You&rsquo;re requesting too many kittens! Slow down!</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Internal Server Error &ndash; We had a problem with our server. Try again later.</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Service Unavailable &ndash; We&rsquo;re temporarially offline for maintanance. Please try again later.</td>
+</tr>
+</tbody></table>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="python">python</a>
+          </div>
+      </div>
+    </div>
   </body>
 </html>
