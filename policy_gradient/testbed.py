@@ -1,13 +1,16 @@
 import numpy as np
 import numpy.linalg as la
-import policy_gradient
 import matplotlib.pyplot as plt
+import policy_gradient
+import testclass
+from subprocess import call
+import timeit
 
-class Testbed:
+class Testbed(testclass.TestClass):
 	"""
 	Simple testbed for policy gradient.
 	"""
-	def __init__(self, A, B):
+	def __init__(self, A=None, B=None, goal_state=None, net_dims=None):
 		"""
 		Initializes dynamics of environment.
 
@@ -17,16 +20,17 @@ class Testbed:
 		B: array-like
 			Transition matrix for actions.
 		"""
-		self.A = A
-		self.B = B
-		self.goal_state = np.array([10,10]).reshape(2,1)
-		self.learner = policy_gradient.Policy_Gradient(goal_state=self.goal_state, net_dims=[2,2,2,2])
+		self.A = A if A is not None else np.diag(np.ones(2)) 
+		self.B = B if B is not None else np.diag(np.ones(2))
+		self.goal_state = goal_state if goal_state is not None else np.array([10,10]).reshape(2,1)
+		self.net_dims = net_dims if net_dims is not None else [2,6,4,3,2]
+		self.learner = policy_gradient.PolicyGradient(net_dims=self.net_dims, output_function='tanh')
 
 	def calculate_next_state(self, state, action):
 		"""
 		Calculates next state using given state-action pair.
 
-		Equation: x_{t+1} = Ax + Bu + w
+		Equation: x_{t+1} = Ax_{t} + Bu + w
 
 		Parameters:
 		state: array-like
@@ -34,7 +38,7 @@ class Testbed:
 		action: array-like
 			Action taken from given state.
 		"""
-		next_state = np.dot(self.A, state) + np.dot(self.B, action) #+ np.random.normal(loc=0.0, scale=1.0, size=state.shape)
+		next_state = np.dot(self.A, state) + np.dot(self.B, action) + np.random.normal(loc=0.0, scale=1.0, size=state.shape)
 		return next_state
 
 	def reward_function(self, s, a):
@@ -54,61 +58,6 @@ class Testbed:
 		"""
 		return -la.norm(s - self.goal_state)
 
-	def run_test(self, iters=100, iter_len=100, traj_len=10):
-		"""
-		Runs learner over example environment 
-		and returns results.
-
-		Parameters:
-		iter_len: int
-			Number of iterations.
-		traj_len: int
-			Length of each sample trajectory.
-		"""
-		
-		mean_rewards = []
-		for i in range(iters):
-			traj_states = []
-			traj_actions = []
-			rewards = []
-			for j in range(iter_len):
-				states = []
-				actions = []
-				curr_rewards = []
-				curr_state = np.zeros((self.A.shape[0], 1))
-
-				# Rolls out single trajectory
-				for k in range(traj_len):
-					# Get action from learner
-					curr_action = self.learner.get_action(curr_state)
-
-					# Update values
-					states.append(curr_state)
-					curr_rewards.append(self.reward_function(curr_state, curr_action))
-					actions.append(curr_action)
-
-					# Update state
-					curr_state = self.calculate_next_state(curr_state, curr_action)
-
-				# Append trajectory/rewards
-				traj_states.append(states)
-				traj_actions.append(actions)
-				rewards.append(curr_rewards)
-
-			# Apply policy gradient iteration
-			self.learner.gradient_update(np.array(traj_states), np.array(traj_actions), np.array(rewards))
-			mean_rewards.append(np.mean([reward_list[-1] for reward_list in rewards]))
-
-		mean_rewards = -np.array(mean_rewards)
-		print "Mean Ending Distance: \n {}".format(mean_rewards)
-		# Display results
-		plt.figure()
-		plt.plot(range(len(mean_rewards)), mean_rewards)
-		plt.xlabel('Number of Iterations')
-		plt.ylabel('Mean Ending Distance from Goal')
-		plt.title('Policy Gradient Learning')
-		plt.savefig("policy_gradient_{}_iters_{}_iterlen.pdf".format(iters, iter_len))
-
 	def run_step(self, action):
 		"""
 		Performs a single trajectory run.
@@ -117,8 +66,35 @@ class Testbed:
 		reward = self.reward_function(self.state, action)
 		return next_state, reward, terminated
 
+	def performance_check(self, num_iters=100, batch_size=100, traj_len=10):
+		"""
+		Runs learner over example environment 
+		and returns results.
+
+		Parameters:
+		num_iters: int
+			Number of iterations to run gradient updates.
+		batch_size: int
+			Number of trajectories to run in a single iteration.
+		traj_len: int
+			Number of state-action pairs in a trajectory.
+		"""
+		initial_state = np.zeros((self.A.shape[0], 1))
+		mean_rewards = self.learner.train_agent(dynamics_func=self.calculate_next_state, reward_func=self.reward_function, \
+			initial_state=initial_state, num_iters=num_iters, batch_size=batch_size, traj_len=traj_len)
+		mean_rewards = -np.array(mean_rewards)
+		print "Mean Ending Distance: \n {}".format(mean_rewards)
+		# Display results
+		plt.figure()
+		plt.plot(range(len(mean_rewards)), mean_rewards)
+		plt.xlabel('Number of Iterations')
+		plt.ylabel('Mean Ending Distance from Goal')
+		plt.title('Policy Gradient Learning')
+		plt.savefig("policy_gradient_{}_numiters_{}_batchsize.pdf".format(num_iters, batch_size))
+
 if __name__ == '__main__':
-	A = np.diag(np.ones(2))
-	B = np.diag(np.ones(2))
-	testbed = Testbed(A, B)
-	testbed.run_test()
+	testbed = Testbed(goal_state = np.array([10,10]))
+	# print "Running Test Suite."
+	# call(["nosetests", "-v", "testbed.py"])
+	print "Running Performance Test."
+	testbed.performance_check()
