@@ -30,6 +30,13 @@
 <pre><code>pip install -i https://testpypi.python.org/pypi policy_gradient
 </code></pre>
 
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h3>
+
+<pre><code>learner = PolicyGradient(net_dims=net_dims, output_function='tanh')
+learner.train_agent(dynamics_func, reward_func, initial_state)
+</code></pre>
+
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/WesleyHsieh/policy_gradient">Policy Gradient</a> is maintained by <a href="https://github.com/WesleyHsieh">WesleyHsieh</a>.</span>
 
