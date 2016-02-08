@@ -22,7 +22,7 @@
       <h3>
 <a id="summary" class="anchor" href="#summary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Summary</h3>
 
-<p>Python implementation of policy gradient reinforcement learning methods, built on TensorFlow. Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters.</p>
+<p>Python implementation of policy gradient reinforcement learning methods, built on TensorFlow. Flexible reinforcement learning framework that does not require dynamics of the environment. Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters. </p>
 
 <h3>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
@@ -36,6 +36,12 @@
 <pre><code>learner = PolicyGradient(net_dims=net_dims, output_function='tanh')
 learner.train_agent(dynamics_func, reward_func, initial_state)
 </code></pre>
+
+<h3>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h3>
+
+<h4>
+<a id="user" class="anchor" href="#user" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>User</h4>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/WesleyHsieh/policy_gradient">Policy Gradient</a> is maintained by <a href="https://github.com/WesleyHsieh">WesleyHsieh</a>.</span>
