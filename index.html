@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>API Reference</title>
+    <title>API Documentation</title>
 
     <style>
       .highlight table td { padding: 5px; }
@@ -88,10 +88,10 @@
     </style>
     <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
     <link href="stylesheets/print.css" rel="stylesheet" media="print" />
-      <script src="javascripts/all.js"></script>
+      <script src="javascripts/all_nosearch.js"></script>
   </head>
 
-  <body class="index" data-languages="[&quot;python&quot;]">
+  <body class="index" data-languages="[]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -101,25 +101,22 @@
     <div class="tocify-wrapper">
       <img src="images/logo.png" />
         <div class="lang-selector">
-              <a href="#" data-language-name="python">python</a>
         </div>
-        <div class="search">
-          <input type="text" class="search" id="input-search" placeholder="Search">
-        </div>
-        <ul class="search-results"></ul>
       <div id="toc">
       </div>
-        <ul class="toc-footer">
-            <li><a href='#'>Sign Up for a Developer Key</a></li>
-            <li><a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a></li>
-        </ul>
     </div>
     <div class="page-wrapper">
       <div class="dark-box"></div>
       <div class="content">
         <h1 id="introduction">Introduction</h1>
 
-<p>Python implementation of policy gradient reinforcement learning methods, built on TensorFlow. Flexible reinforcement learning framework that does not require dynamics of the environment. Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters. </p>
+<p>Python implementation of policy gradient reinforcement learning methods, built on TensorFlow. </p>
+
+<p>Flexible reinforcement learning framework that does not require dynamics of the environment. </p>
+
+<p>Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters. </p>
+
+<p>Interface designed to minimize the amount of developer interaction needed. </p>
 
 <h1 id="installation">Installation</h1>
 
@@ -135,119 +132,392 @@ Dependencies: NumPy, TensorFlow, Nose
 <h1 id="interface">Interface</h1>
 
 <p>Quick, clean interface for training a neural network using policy gradient methods.</p>
-<pre class="highlight python"><code><span class="n">learner</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="s">'tanh'</span><span class="p">)</span>
+
+<p>Designed to minimize the amount of interaction with the interface. </p>
+
+<p>Just initialize the learner, pass in the dynamics/rewards functions and the initial state,
+and you&rsquo;re good to go!</p>
+<pre class="highlight python"><code><span class="c"># Initialize learner</span>
+<span class="n">learner</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="s">'tanh'</span><span class="p">)</span>
+<span class="c"># Train policy</span>
 <span class="n">learner</span><span class="o">.</span><span class="n">train_agent</span><span class="p">(</span><span class="n">dynamics_func</span><span class="p">,</span> <span class="n">reward_func</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">)</span>
+<span class="c"># Retrieve predicted best actions based on learned policy</span>
 <span class="n">learner</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
 </code></pre>
 
-<aside class="notice">
-</aside>
+<h1 id="main-functions">Main Functions</h1>
 
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
+<p>Calculates policy gradient for given input state/actions.</p>
 
-<aside class="warning">Inside HTML code blocks like this one, you can&rsquo;t use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
+<p>Users should primarily be calling main PolicyGradient class methods.</p>
 
-<h2 id="main-functions">Main Functions</h2>
+<h2 id="__init__-self-net_dims-output_function-none">__init__(self, net_dims, output_function=None)</h2>
 
-<h3 id="train_agent">train_agent</h3>
-
-<p>Parameters:</p>
-
-<p>dynamics_func: function
-      User-provided function that takes in 
-      a state and action, and returns the next state.</p>
-
-<p>reward_func: function
-      User-provided function that takes in 
-      a state and action, and returns the associated reward.</p>
-
-<p>initial_state: array-like
-      Initial state that each trajectory starts at.
-      Must be 1-dimensional NumPy array.</p>
-
-<p>num_iters: int
-      Number of iterations to run gradient updates.</p>
-
-<p>batch_size: int
-      Number of trajectories to run in a single iteration.</p>
-
-<p>traj_len: int
-      Number of state-action pairs in a trajectory.</p>
-
-<p>Output:
-    mean_rewards: array-like
-      Mean ending rewards of all iterations.</p>
-<pre class="highlight python"><code><span class="n">train_agent</span><span class="p">(</span><span class="n">dynamics_func</span><span class="p">)</span>
+<p>Initializes PolicyGradient class.</p>
+<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pol_grad</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="n">output_function</span><span class="o">=</span><span class="s">'tanh'</span><span class="p">)</span>
 </code></pre>
 
-<h2 id="utility-functions">Utility Functions</h2>
-
-<p>asdfadsf</p>
-
-          <h1 id="errors">Errors</h1>
-
-<aside class="notice">This error section is stored in a separate file in `includes/_errors.md`. Slate allows you to optionally separate out your docs into many files&hellip;just save them to the `includes` folder and add them to the top of your `index.md`&rsquo;s frontmatter. Files are included in the order listed.</aside>
-
-<p>The Kittn API uses the following error codes:</p>
+<h3 id="inputs">Inputs</h3>
 
 <table><thead>
 <tr>
-<th>Error Code</th>
-<th>Meaning</th>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead><tbody>
 <tr>
-<td>400</td>
-<td>Bad Request &ndash; Your request sucks</td>
+<td>net_dims</td>
+<td>array-like</td>
+<td>1D list corresponding to dimensions of each layer in the net.</td>
 </tr>
 <tr>
-<td>401</td>
-<td>Unauthorized &ndash; Your API key is wrong</td>
+<td>output_function</td>
+<td>string</td>
+<td>Non-linearity function applied to output of neural network. Options are: &lsquo;tanh&rsquo;, &#39;sigmoid&rsquo;, &#39;relu&rsquo;.</td>
+</tr>
+</tbody></table>
+
+<h2 id="train_agent-self-dynamics_func-reward_func-initial_state-num_iters-batch_size-traj_len-step_size-0-1-momentum-0-5-normalize-true">train_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, step_size=0.1, momentum=0.5, normalize=True)</h2>
+
+<p>Trains agent using input dynamics and rewards functions.</p>
+<pre class="highlight python"><code><span class="n">train_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dynamics_func</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>dynamics_func</td>
+<td>function</td>
+<td>User-provided function that takes in a state and action, and returns the next state.</td>
 </tr>
 <tr>
-<td>403</td>
-<td>Forbidden &ndash; The kitten requested is hidden for administrators only</td>
+<td>reward_func</td>
+<td>function</td>
+<td>User-provided function that takes in a state and action, and returns the associated reward.</td>
 </tr>
 <tr>
-<td>404</td>
-<td>Not Found &ndash; The specified kitten could not be found</td>
+<td>initial_state</td>
+<td>array-like</td>
+<td>Initial state that each trajectory starts at. Must be 1-dimensional NumPy array.</td>
 </tr>
 <tr>
-<td>405</td>
-<td>Method Not Allowed &ndash; You tried to access a kitten with an invalid method</td>
+<td>num_iters</td>
+<td>int</td>
+<td>Number of iterations to run gradient updates.</td>
 </tr>
 <tr>
-<td>406</td>
-<td>Not Acceptable &ndash; You requested a format that isn&rsquo;t json</td>
+<td>batch_size</td>
+<td>int</td>
+<td>Number of trajectories to run in a single iteration.</td>
 </tr>
 <tr>
-<td>410</td>
-<td>Gone &ndash; The kitten requested has been removed from our servers</td>
+<td>traj_len</td>
+<td>int</td>
+<td>Number of state-action pairs in a trajectory.</td>
+</tr>
+</tbody></table>
+
+<h3 id="outputs">Outputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>mean_rewards</td>
+<td>array-like</td>
+<td>Mean ending rewards of all iterations.</td>
+</tr>
+</tbody></table>
+
+<h2 id="gradient_update-self-traj_states-traj_actions-rewards-step_size-momentum-normalize">gradient_update(self, traj_states, traj_actions, rewards, step_size, momentum, normalize)</h2>
+
+<p>Estimates and applies gradient update according to a policy.</p>
+
+<p>States, actions, rewards must be lists of lists; first dimension indexes
+the ith trajectory, second dimension indexes the jth state-action-reward of that
+trajectory.</p>
+<pre class="highlight python"><code><span class="c"># Obtain traj_states, traj_actions, rewards through environment</span>
+<span class="n">pol_grad</span><span class="o">.</span><span class="n">gradient_update</span><span class="p">(</span><span class="n">traj_states</span><span class="p">,</span> <span class="n">traj_actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>traj_states</td>
+<td>array-like</td>
+<td>List of list of states.</td>
 </tr>
 <tr>
-<td>418</td>
-<td>I&rsquo;m a teapot</td>
+<td>traj_actions</td>
+<td>array-like</td>
+<td>List of list of actions.</td>
 </tr>
 <tr>
-<td>429</td>
-<td>Too Many Requests &ndash; You&rsquo;re requesting too many kittens! Slow down!</td>
+<td>rewards</td>
+<td>array-like</td>
+<td>List of list of rewards.</td>
 </tr>
 <tr>
-<td>500</td>
-<td>Internal Server Error &ndash; We had a problem with our server. Try again later.</td>
+<td>step_size</td>
+<td>float</td>
+<td>Step size.</td>
 </tr>
 <tr>
-<td>503</td>
-<td>Service Unavailable &ndash; We&rsquo;re temporarially offline for maintanance. Please try again later.</td>
+<td>momentum</td>
+<td>float</td>
+<td>Momentum value.</td>
+</tr>
+<tr>
+<td>normalize</td>
+<td>boolean</td>
+<td>Determines whether to normalize gradient update. Recommended if running into NaN/infinite value errors.</td>
+</tr>
+</tbody></table>
+
+<h2 id="get_action-self-state">get_action(self, state)</h2>
+
+<p>Returns action based on input state.</p>
+<pre class="highlight python"><code><span class="n">new_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],[</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">]])</span>
+<span class="n">next_action</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>state</td>
+<td>array-like</td>
+<td>Input state.</td>
+</tr>
+</tbody></table>
+
+<h3 id="outputs">Outputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>action</td>
+<td>array-like</td>
+<td>Predicted action.</td>
+</tr>
+</tbody></table>
+
+<h1 id="utility-functions">Utility Functions</h1>
+
+<h2 id="init_neural_net-self-net_dims-output_function-none">init_neural_net(self, net_dims, output_function=None)</h2>
+
+<p>Sets up neural network for policy gradient.</p>
+<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pol_grad</span><span class="o">.</span><span class="n">init_neural_net</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="n">output_function</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>net_dims</td>
+<td>array-like</td>
+<td>List of dimensions for layers of net.</td>
+</tr>
+<tr>
+<td>output_function</td>
+<td>string</td>
+<td>Non-linearity function applied to output of neural network. Options are: &#39;tanh&rsquo;, &#39;sigmoid&rsquo;, &#39;relu&rsquo;.</td>
+</tr>
+</tbody></table>
+
+<h2 id="setup_net-self-net_dims">setup_net(self, net_dims)</h2>
+
+<p>Initializes TensorFlow neural net with input net dimensions.</p>
+<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">layers</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">biases</span><span class="p">,</span> <span class="n">input_state</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">setup_net</span><span class="p">(</span><span class="n">net_dims</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>net_dims</td>
+<td>array-like</td>
+<td>List of dimensions for layers of net.</td>
+</tr>
+</tbody></table>
+
+<h3 id="outputs">Outputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>layers</td>
+<td>array-like</td>
+<td>List of TensorFlow nodes corresponding to layers of net.</td>
+</tr>
+<tr>
+<td>weights</td>
+<td>array-like</td>
+<td>List of net weights.</td>
+</tr>
+<tr>
+<td>biases</td>
+<td>array-like</td>
+<td>List of net biases.</td>
+</tr>
+<tr>
+<td>input_state</td>
+<td>TensorFlow node</td>
+<td>Placeholder for input state.</td>
+</tr>
+</tbody></table>
+
+<h2 id="estimate_q-self-states-actions-rewards-net_dims-none">estimate_q(self, states, actions, rewards, net_dims=None)</h2>
+
+<p>Estimates the q-values for a trajectory based on the intermediate rewards.</p>
+<pre class="highlight python"><code><span class="c"># Obtain traj_states, traj_actions, rewards through environment</span>
+<span class="n">q_value_lists</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">estimate_q</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">net_dims</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>states</td>
+<td>array-like</td>
+<td>List of list of input states.</td>
+</tr>
+<tr>
+<td>actions</td>
+<td>array-like</td>
+<td>List of list of input actions.</td>
+</tr>
+<tr>
+<td>rewards</td>
+<td>array-like</td>
+<td>List of list of input rewards.</td>
+</tr>
+<tr>
+<td>net_dims</td>
+<td>array-like</td>
+<td>List of dimensions for layers of net. Defaults to three layer net, with dimensions  x, 2x, 1.5x, 1 respectively where x is the length of the trajectory.</td>
+</tr>
+</tbody></table>
+
+<h3 id="outputs">Outputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>q</td>
+<td>array-like</td>
+<td>Estimated q-values.</td>
+</tr>
+</tbody></table>
+
+<h2 id="meanstd_sample-self-mean-std-1-0">meanstd_sample(self, mean, std=1.0)</h2>
+
+<p>Samples an action based on the input probability distribution.</p>
+<pre class="highlight python"><code><span class="n">new_action_mean</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">pol_grad</span><span class="o">.</span><span class="n">output_mean</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="p">:</span> <span class="n">state</span><span class="p">})</span>
+<span class="n">action_sampled</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">meanstd_sample</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre>
+
+<h3 id="inputs">Inputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>mean</td>
+<td>array-like</td>
+<td>Input mean of action distribution.</td>
+</tr>
+<tr>
+<td>std</td>
+<td>float</td>
+<td>Standard deviation of action distribution.</td>
+</tr>
+</tbody></table>
+
+<h3 id="outputs">Outputs</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>sample_action</td>
+<td>array-like</td>
+<td>Action sampled from given distribution.</td>
 </tr>
 </tbody></table>
 
       </div>
       <div class="dark-box">
           <div class="lang-selector">
-                <a href="#" data-language-name="python">python</a>
           </div>
       </div>
     </div>
