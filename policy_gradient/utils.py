@@ -27,10 +27,10 @@ class Utils:
 				layers of net.
 
 			weights: array-like
-				Net weights.
+				List of net weights.
 
 			biases: array-like
-				Net biases.
+				List of net biases.
 
 			input_state: TensorFlow node
 				Placeholder for input state.
@@ -61,18 +61,18 @@ class Utils:
 
 		Parameters:
 		states: array-like
-			List of list of states.
+			List of list of input states.
 
 		actions: array-like
-			List of list of actions.
+			List of list of input actions.
 
 		rewards: array-like
-			List of list of rewards.
+			List of list of input rewards.
 
 		net_dims: array-like
 			List of dimensions for layers of net.
 			Defaults to three layer net, with dimensions 
-			x, 2x, 1.5x, 1 respectively where x is the size
+			x, 2x, 1.5x, 1 respectively where x is the length
 			of the trajectory.
 
 		Output: 
@@ -180,9 +180,3 @@ class Utils:
 		"""
 		sample_action = mean + std * np.random.randn(*mean.shape)
 		return sample_action.T
-
-	def free_resources(self):
-		"""
-		Frees resources used by current TensorFlow session.
-		"""
-		self.sess.close()

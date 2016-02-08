@@ -92,26 +92,28 @@ class PolicyGradient(Utils):
 			mean_rewards.append(np.mean([reward_list[-1] for reward_list in rewards]))
 		return np.array(mean_rewards)
 
-	def gradient_update(self, traj_states, traj_actions, rewards, step_size, momentum, normalize):
+	def gradient_update(self, traj_states, traj_actions, rewards, step_size=0.1, momentum=0.5, normalize=True):
 		"""
 		Estimates and applies gradient update according to a policy.
 
+		States, actions, rewards must be lists of lists; first dimension indexes
+		the ith trajectory, second dimension indexes the jth state-action-reward of that
+		trajectory.
+		
 		Parameters:
 		traj_states: array-like
-			List of states.
+			List of list of states.
 		traj_actions: array-like
-			List of actions.
+			List of list of actions.
 		rewards: array-like
-			List of rewards.
+			List of list of rewards.
 		step_size: float
 			Step size.
 		momentum: float
 			Momentum value.
 		normalize: boolean
 			Determines whether to normalize gradient update. 
-
-		Output: 
-			None.
+			Recommended if running into NaN/infinite value errors.
 		"""
 		# Calculate updates and create update pairs
 		weight_update = 0
