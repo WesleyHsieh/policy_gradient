@@ -36,7 +36,7 @@ class Utils:
 				Placeholder for input state.
 			"""
 			# Initialize placeholders for input state, weights, biases
-			input_state = tf.placeholder("float", [None, net_dims[0]])
+			input_state = tf.placeholder("float", [None, None, net_dims[0]])
 			weights = [tf.Variable(tf.random_normal([net_dims[i], net_dims[i+1]])) for i in range(len(net_dims) - 1)]
 			biases = [tf.Variable(tf.random_normal([net_dims[i]])) for i in range(1, len(net_dims))]
 			assert len(weights) == len(biases)
@@ -130,9 +130,8 @@ class Utils:
 			neural network. 
 			Options are: 'tanh', 'sigmoid', 'relu'.
 		"""
-		assert output_function == None or output_function == 'tanh' \
-			or output_function == 'sigmoid' or output_function == 'relu'
-		# tf Graph input
+		assert output_function in [None, 'tanh', 'sigmoid', 'relu', 'softmax']
+
 		n_inputs = net_dims[0]
 		n_outputs = net_dims[-1]
 		#self.input_state = tf.placeholder("float", [None, n_inputs])
@@ -148,6 +147,8 @@ class Utils:
 			self.output_mean = tf.nn.sigmoid(self.output_mean)
 		elif output_function == "relu":
 			self.output_mean = tf.nn.relu(self.output_mean)
+		elif output_function == 'softmax':
+			self.output_mean = tf.nn.softmax(self.output_mean)
 
 		 # Output probability layer
 		log_prob_output = tf.mul(tf.constant(-0.5), tf.square(tf.global_norm([self.output_mean - self.observed_action])))

@@ -26,7 +26,7 @@ class PolicyGradient(Utils):
 		output_function: string
 			Non-linearity function applied to output of
 			neural network. 
-			Options are: 'tanh', 'sigmoid', 'relu'.
+			Options are: 'tanh', 'sigmoid', 'relu', 'softmax'.
 		"""
 		self.prev_weight_update = self.prev_bias_update = None
 		self.init_neural_net(net_dims, output_function)
