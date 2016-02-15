@@ -4,6 +4,7 @@ import collections
 import IPython
 import tensorflow as tf
 from utils import *
+import time
 
 class PolicyGradient(Utils):
 
@@ -15,7 +16,7 @@ class PolicyGradient(Utils):
 	PolicyGradient class methods.
 	"""
 
-	def __init__(self, net_dims, output_function=None):
+	def __init__(self, net_dims, q_net_dims=None, output_function=None):
 		"""
 		Initializes PolicyGradient class.
 
@@ -29,7 +30,8 @@ class PolicyGradient(Utils):
 			Options are: 'tanh', 'sigmoid', 'relu', 'softmax'.
 		"""
 		self.prev_weight_update = self.prev_bias_update = None
-		self.init_neural_net(net_dims, output_function)
+		self.init_action_neural_net(net_dims, output_function)
+		
 
 	def train_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, \
 			step_size=0.1, momentum=0.5, normalize=True):
@@ -58,16 +60,17 @@ class PolicyGradient(Utils):
 			Mean ending rewards of all iterations.
 		"""
 		mean_rewards = []
+		ending_states = []
 		for i in range(num_iters):
 			traj_states = []
 			traj_actions = []
 			rewards = []
+
 			for j in range(batch_size):
 				states = []
 				actions = []
 				curr_rewards = []
 				curr_state = initial_state
-
 				# Rolls out single trajectory
 				for k in range(traj_len):
 					# Get action from learner
@@ -89,8 +92,9 @@ class PolicyGradient(Utils):
 			# Apply policy gradient iteration
 			self.gradient_update(np.array(traj_states), np.array(traj_actions), np.array(rewards), \
 					step_size, momentum, normalize)
-			mean_rewards.append(np.mean([reward_list[-1] for reward_list in rewards]))
-		return np.array(mean_rewards)
+			mean_rewards.append(np.mean([np.sum(reward_list) for reward_list in rewards]))
+			ending_states.append([traj[-1] for traj in traj_states])
+		return np.array(mean_rewards), ending_states
 
 	def gradient_update(self, traj_states, traj_actions, rewards, step_size=0.1, momentum=0.5, normalize=True):
 		"""
@@ -129,23 +133,18 @@ class PolicyGradient(Utils):
 			curr_traj_states = traj_states[i]
 			curr_traj_actions = traj_actions[i]
 			curr_q_val_list = q_vals[i]
-			for j in range(curr_q_val_list.shape[0]):
-				# Extract current state, action, q-value
-				curr_state = curr_traj_states[j].T
-				curr_action = curr_traj_actions[j].T
-				curr_q_val = curr_q_val_list[j]
+			curr_traj_states = curr_traj_states.reshape(curr_traj_states.shape[0], curr_traj_states.shape[1] * curr_traj_states.shape[2])
+			curr_traj_actions = curr_traj_actions.reshape(curr_traj_actions.shape[0], curr_traj_actions.shape[1] * curr_traj_actions.shape[2])
+			curr_q_val_list = curr_q_val_list.reshape(curr_q_val_list.shape[0], 1)
 
-				# Calculate gradients
-				# print "curr_state", curr_state
-				# print "curr_action", curr_action
-				# print "curr_q_val", curr_q_val
-				weight_update_vals = self.sess.run(self.weight_grads, \
-					feed_dict={self.input_state: curr_state, self.observed_action: curr_action, self.q_val: curr_q_val})
-				bias_update_vals = self.sess.run(self.bias_grads, \
-					feed_dict={self.input_state: curr_state, self.observed_action: curr_action, self.q_val: curr_q_val}) 
-				weight_update += np.array(weight_update_vals) / np.float(iters)
-				bias_update += np.array(bias_update_vals) / np.float(iters)
-		
+			weight_update_vals = self.sess.run(self.weight_grads, \
+					feed_dict={self.input_state: curr_traj_states, self.observed_action: curr_traj_actions, self.q_val: curr_q_val_list})
+			bias_update_vals = self.sess.run(self.bias_grads, \
+					feed_dict={self.input_state: curr_traj_states, self.observed_action: curr_traj_actions, self.q_val: curr_q_val_list})
+
+			weight_update += np.array(weight_update_vals) / np.float(iters)
+			bias_update += np.array(bias_update_vals) / np.float(iters)
+
 		# Update weights
 		for j in range(len(self.weights)):
 			# Normalize gradient
@@ -174,7 +173,6 @@ class PolicyGradient(Utils):
 
 		self.prev_weight_update = weight_update
 		self.prev_bias_update = bias_update
-		return None
 
 	def get_action(self, state):
 		"""

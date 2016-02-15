@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import policy_gradient
 import testclass
 from subprocess import call
-import timeit
+import time
 
 class Testbed(testclass.TestClass):
 	"""
@@ -56,7 +56,10 @@ class Testbed(testclass.TestClass):
 		r: float
 			Reward, l2 norm between current and goal state.
 		"""
-		return -la.norm(s - self.goal_state)
+		curr_reward = la.norm(s - self.goal_state)
+		next_state = self.calculate_next_state(s, a)
+		next_reward = la.norm(next_state - self.goal_state)
+		return curr_reward - next_reward
 
 	def run_step(self, action):
 		"""
@@ -80,21 +83,29 @@ class Testbed(testclass.TestClass):
 			Number of state-action pairs in a trajectory.
 		"""
 		initial_state = np.zeros((self.A.shape[0], 1))
-		mean_rewards = self.learner.train_agent(dynamics_func=self.calculate_next_state, reward_func=self.reward_function, \
+		mean_rewards, ending_states = self.learner.train_agent(dynamics_func=self.calculate_next_state, reward_func=self.reward_function, \
 			initial_state=initial_state, num_iters=num_iters, batch_size=batch_size, traj_len=traj_len)
-		mean_rewards = -np.array(mean_rewards)
-		print "Mean Ending Distance: \n {}".format(mean_rewards)
+		mean_rewards = np.array(mean_rewards)
+		mean_ending_states = np.mean(ending_states, axis=1)
+		mean_ending_distances = [la.norm(s - self.goal_state) for s in mean_ending_states]
+		print "Mean Ending Distance: \n {}".format(np.around(mean_ending_distances, decimals=3))
 		# Display results
 		plt.figure()
-		plt.plot(range(len(mean_rewards)), mean_rewards)
+		plt.plot(range(len(mean_ending_distances)), mean_ending_distances)
 		plt.xlabel('Number of Iterations')
 		plt.ylabel('Mean Ending Distance from Goal')
 		plt.title('Policy Gradient Learning')
 		plt.savefig("policy_gradient_{}_numiters_{}_batchsize.pdf".format(num_iters, batch_size))
 
 if __name__ == '__main__':
+	start_time = time.clock()
 	testbed = Testbed(goal_state = np.array([10,10]))
 	# print "Running Test Suite."
 	# call(["nosetests", "-v", "testbed.py"])
 	print "Running Performance Test."
-	testbed.performance_check()
+	num_iters = 50
+	batch_size = 50
+	testbed.performance_check(num_iters, batch_size)
+	end_time = time.clock()
+	total_time = end_time - start_time
+	print "{} seconds elapsed for {} iterations of {} rollouts each.".format(total_time, num_iters, batch_size)
