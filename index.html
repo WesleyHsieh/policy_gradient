@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>API Documentation</title>
+    <title>API Reference</title>
 
     <style>
       .highlight table td { padding: 5px; }
@@ -88,10 +88,10 @@
     </style>
     <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
     <link href="stylesheets/print.css" rel="stylesheet" media="print" />
-      <script src="javascripts/all_nosearch.js"></script>
+      <script src="javascripts/all.js"></script>
   </head>
 
-  <body class="index" data-languages="[]">
+  <body class="index" data-languages="[&quot;python&quot;]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -101,7 +101,12 @@
     <div class="tocify-wrapper">
       <img src="images/logo.png" />
         <div class="lang-selector">
+              <a href="#" data-language-name="python">python</a>
         </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
       <div id="toc">
       </div>
     </div>
@@ -120,23 +125,16 @@
 
 <h1 id="installation">Installation</h1>
 
+<blockquote>
+<p>pip install -i https://testpypi.python.org/pypi policy_gradient</p>
+</blockquote>
+
 <p>Quick installation using the pip package manager.
 <aside class="notice">
 Dependencies: NumPy, TensorFlow, Nose
 </aside></p>
 
-<blockquote>
-<p>pip install -i https://testpypi.python.org/pypi policy_gradient</p>
-</blockquote>
-
 <h1 id="interface">Interface</h1>
-
-<p>Quick, clean interface for training a neural network using policy gradient methods.</p>
-
-<p>Designed to minimize the amount of interaction with the interface. </p>
-
-<p>Just initialize the learner, pass in the dynamics/rewards functions and the initial state,
-and you&rsquo;re good to go!</p>
 <pre class="highlight python"><code><span class="c"># Initialize learner</span>
 <span class="n">learner</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="s">'tanh'</span><span class="p">)</span>
 <span class="c"># Train policy</span>
@@ -145,6 +143,13 @@ and you&rsquo;re good to go!</p>
 <span class="n">learner</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
 </code></pre>
 
+<p>Quick, clean interface for training a neural network using policy gradient methods.</p>
+
+<p>Designed to minimize the amount of interaction with the interface. </p>
+
+<p>Just initialize the learner, pass in the dynamics/rewards functions and the initial state,
+and you&rsquo;re good to go!</p>
+
 <h1 id="main-functions">Main Functions</h1>
 
 <p>Calculates policy gradient for given input state/actions.</p>
@@ -152,11 +157,12 @@ and you&rsquo;re good to go!</p>
 <p>Users should primarily be calling main PolicyGradient class methods.</p>
 
 <h2 id="__init__-self-net_dims-output_function-none">__init__(self, net_dims, output_function=None)</h2>
-
-<p>Initializes PolicyGradient class.</p>
-<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<pre class="highlight python"><code><span class="c"># Dimensions of net</span>
+<span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">pol_grad</span> <span class="o">=</span> <span class="n">PolicyGradient</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="n">output_function</span><span class="o">=</span><span class="s">'tanh'</span><span class="p">)</span>
 </code></pre>
+
+<p>Initializes PolicyGradient class.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -180,10 +186,13 @@ and you&rsquo;re good to go!</p>
 </tbody></table>
 
 <h2 id="train_agent-self-dynamics_func-reward_func-initial_state-num_iters-batch_size-traj_len-step_size-0-1-momentum-0-5-normalize-true">train_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, step_size=0.1, momentum=0.5, normalize=True)</h2>
+<pre class="highlight python"><code><span class="c"># Setup initial state</span>
+<span class="n">initial_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">mean_rewards</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">train_agent</span><span class="p">(</span><span class="n">dynamics_func</span><span class="p">,</span> <span class="n">reward_func</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="n">initial_state</span><span class="p">,</span> \
+    <span class="n">num_iters</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">traj_len</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre>
 
 <p>Trains agent using input dynamics and rewards functions.</p>
-<pre class="highlight python"><code><span class="n">train_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dynamics_func</span><span class="p">)</span>
-</code></pre>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -243,15 +252,15 @@ and you&rsquo;re good to go!</p>
 </tbody></table>
 
 <h2 id="gradient_update-self-traj_states-traj_actions-rewards-step_size-momentum-normalize">gradient_update(self, traj_states, traj_actions, rewards, step_size, momentum, normalize)</h2>
+<pre class="highlight python"><code><span class="c"># Obtain traj_states, traj_actions, rewards through environment</span>
+<span class="n">pol_grad</span><span class="o">.</span><span class="n">gradient_update</span><span class="p">(</span><span class="n">traj_states</span><span class="p">,</span> <span class="n">traj_actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
+</code></pre>
 
 <p>Estimates and applies gradient update according to a policy.</p>
 
 <p>States, actions, rewards must be lists of lists; first dimension indexes
 the ith trajectory, second dimension indexes the jth state-action-reward of that
 trajectory.</p>
-<pre class="highlight python"><code><span class="c"># Obtain traj_states, traj_actions, rewards through environment</span>
-<span class="n">pol_grad</span><span class="o">.</span><span class="n">gradient_update</span><span class="p">(</span><span class="n">traj_states</span><span class="p">,</span> <span class="n">traj_actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</code></pre>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -295,11 +304,12 @@ trajectory.</p>
 </tbody></table>
 
 <h2 id="get_action-self-state">get_action(self, state)</h2>
-
-<p>Returns action based on input state.</p>
-<pre class="highlight python"><code><span class="n">new_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],[</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">]])</span>
+<pre class="highlight python"><code><span class="c"># Arbitrary input state</span>
+<span class="n">new_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">],[</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">]])</span>
 <span class="n">next_action</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
 </code></pre>
+
+<p>Returns action based on input state.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -336,11 +346,12 @@ trajectory.</p>
 <h1 id="utility-functions">Utility Functions</h1>
 
 <h2 id="init_neural_net-self-net_dims-output_function-none">init_neural_net(self, net_dims, output_function=None)</h2>
-
-<p>Sets up neural network for policy gradient.</p>
-<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<pre class="highlight python"><code><span class="c"># Dimensions of net</span>
+<span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">pol_grad</span><span class="o">.</span><span class="n">init_neural_net</span><span class="p">(</span><span class="n">net_dims</span><span class="p">,</span> <span class="n">output_function</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 </code></pre>
+
+<p>Sets up neural network for policy gradient.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -364,11 +375,12 @@ trajectory.</p>
 </tbody></table>
 
 <h2 id="setup_net-self-net_dims">setup_net(self, net_dims)</h2>
-
-<p>Initializes TensorFlow neural net with input net dimensions.</p>
-<pre class="highlight python"><code><span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<pre class="highlight python"><code><span class="c"># Dimensions of net</span>
+<span class="n">net_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">layers</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">biases</span><span class="p">,</span> <span class="n">input_state</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">setup_net</span><span class="p">(</span><span class="n">net_dims</span><span class="p">)</span>
 </code></pre>
+
+<p>Initializes TensorFlow neural net with input net dimensions.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -418,11 +430,11 @@ trajectory.</p>
 </tbody></table>
 
 <h2 id="estimate_q-self-states-actions-rewards-net_dims-none">estimate_q(self, states, actions, rewards, net_dims=None)</h2>
-
-<p>Estimates the q-values for a trajectory based on the intermediate rewards.</p>
 <pre class="highlight python"><code><span class="c"># Obtain traj_states, traj_actions, rewards through environment</span>
 <span class="n">q_value_lists</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">estimate_q</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">net_dims</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 </code></pre>
+
+<p>Estimates the q-values for a trajectory based on the intermediate rewards.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -472,11 +484,12 @@ trajectory.</p>
 </tbody></table>
 
 <h2 id="meanstd_sample-self-mean-std-1-0">meanstd_sample(self, mean, std=1.0)</h2>
-
-<p>Samples an action based on the input probability distribution.</p>
-<pre class="highlight python"><code><span class="n">new_action_mean</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">pol_grad</span><span class="o">.</span><span class="n">output_mean</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="p">:</span> <span class="n">state</span><span class="p">})</span>
+<pre class="highlight python"><code><span class="c"># Obtain predicted action through net</span>
+<span class="n">new_action_mean</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">pol_grad</span><span class="o">.</span><span class="n">output_mean</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_state</span><span class="p">:</span> <span class="n">state</span><span class="p">})</span>
 <span class="n">action_sampled</span> <span class="o">=</span> <span class="n">pol_grad</span><span class="o">.</span><span class="n">meanstd_sample</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 </code></pre>
+
+<p>Samples an action based on the input probability distribution.</p>
 
 <h3 id="inputs">Inputs</h3>
 
@@ -518,6 +531,7 @@ trajectory.</p>
       </div>
       <div class="dark-box">
           <div class="lang-selector">
+                <a href="#" data-language-name="python">python</a>
           </div>
       </div>
     </div>
