@@ -1,0 +1,139 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Introduction\n\n\nPython implementation of policy gradient reinforcement learning methods, built on TensorFlow. \n\n\nFlexible reinforcement learning framework that does not require dynamics of the environment. \n\n\nGiven a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters. \n\n\nInterface designed to minimize the amount of developer interaction needed. \n\n\nInstallation\n\n\n\n\npip install -i https://testpypi.python.org/pypi policy_gradient\n\n\n\n\nQuick installation using the pip package manager.\n\n\nDependencies: NumPy, TensorFlow, Nose\n\n\n\nInterface\n\n\nQuick, clean interface for training a neural network using policy gradient methods.\n\n\nDesigned to minimize the amount of interaction with the interface. \n\n\nJust initialize the learner, pass in the dynamics/rewards functions and the initial state,\nand you're good to go!\n\n\n# Initialize learner\nlearner = PolicyGradient(net_dims, 'tanh')\n# Train policy\nlearner.train_agent(dynamics_func, reward_func, initial_state)\n# Retrieve predicted best actions based on learned policy\nlearner.get_action(new_state)\n\n\n\n\nMain Functions\n\n\nCalculates policy gradient for given input state/actions.\n\n\nUsers should primarily be calling main PolicyGradient class methods.\n\n\n__init__(self, net_dims, output_function=None)\n\n\nInitializes PolicyGradient class.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nnet_dims\n\n\narray-like\n\n\n1D list corresponding to dimensions of each layer in the net.\n\n\n\n\n\n\noutput_function\n\n\nstring\n\n\nNon-linearity function applied to output of neural network. Options are: 'tanh', 'sigmoid', 'relu'.\n\n\n\n\n\n\n\n\n# Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\npol_grad = PolicyGradient(net_dims, output_function='tanh')\n\n\n\n\ntrain_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, step_size=0.1, momentum=0.5, normalize=True)\n\n\nTrains agent using input dynamics and rewards functions.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\ndynamics_func\n\n\nfunction\n\n\nUser-provided function that takes in a state and action, and returns the next state.\n\n\n\n\n\n\nreward_func\n\n\nfunction\n\n\nUser-provided function that takes in a state and action, and returns the associated reward.\n\n\n\n\n\n\ninitial_state\n\n\narray-like\n\n\nInitial state that each trajectory starts at. Must be 1-dimensional NumPy array.\n\n\n\n\n\n\nnum_iters\n\n\nint\n\n\nNumber of iterations to run gradient updates.\n\n\n\n\n\n\nbatch_size\n\n\nint\n\n\nNumber of trajectories to run in a single iteration.\n\n\n\n\n\n\ntraj_len\n\n\nint\n\n\nNumber of state-action pairs in a trajectory.\n\n\n\n\n\n\n\n\nOutputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nmean_rewards\n\n\narray-like\n\n\nMean ending rewards of all iterations.\n\n\n\n\n\n\n\n\n# Setup initial state\ninitial_state = np.zeros((5, 5))\nmean_rewards = pol_grad.train_agent(dynamics_func, reward_func, initial_state=initial_state, \\\n    num_iters=100, batch_size=50, traj_len=10)\n\n\n\n\ngradient_update(self, traj_states, traj_actions, rewards, step_size, momentum, normalize)\n\n\nEstimates and applies gradient update according to a policy.\n\n\nStates, actions, rewards must be lists of lists; first dimension indexes\nthe ith trajectory, second dimension indexes the jth state-action-reward of that\ntrajectory.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\ntraj_states\n\n\narray-like\n\n\nList of list of states.\n\n\n\n\n\n\ntraj_actions\n\n\narray-like\n\n\nList of list of actions.\n\n\n\n\n\n\nrewards\n\n\narray-like\n\n\nList of list of rewards.\n\n\n\n\n\n\nstep_size\n\n\nfloat\n\n\nStep size.\n\n\n\n\n\n\nmomentum\n\n\nfloat\n\n\nMomentum value.\n\n\n\n\n\n\nnormalize\n\n\nboolean\n\n\nDetermines whether to normalize gradient update. Recommended if running into NaN/infinite value errors.\n\n\n\n\n\n\n\n\n# Obtain traj_states, traj_actions, rewards through environment\npol_grad.gradient_update(traj_states, traj_actions, rewards)\n\n\n\n\nget_action(self, state)\n\n\nReturns action based on input state.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nstate\n\n\narray-like\n\n\nInput state.\n\n\n\n\n\n\n\n\nOutputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\naction\n\n\narray-like\n\n\nPredicted action.\n\n\n\n\n\n\n\n\n# Arbitrary input state\nnew_state = np.array([[10,20],[20,10]])\nnext_action = pol_grad.get_action(new_state)\n\n\n\n\nUtility Functions\n\n\ninit_neural_net(self, net_dims, output_function=None)\n\n\nSets up neural network for policy gradient.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nnet_dims\n\n\narray-like\n\n\nList of dimensions for layers of net.\n\n\n\n\n\n\noutput_function\n\n\nstring\n\n\nNon-linearity function applied to output of neural network. Options are: 'tanh', 'sigmoid', 'relu'.\n\n\n\n\n\n\n\n\n# Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\npol_grad.init_neural_net(net_dims, output_function=None)\n\n\n\n\nsetup_net(self, net_dims)\n\n\nInitializes TensorFlow neural net with input net dimensions.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nnet_dims\n\n\narray-like\n\n\nList of dimensions for layers of net.\n\n\n\n\n\n\n\n\nOutputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nlayers\n\n\narray-like\n\n\nList of TensorFlow nodes corresponding to layers of net.\n\n\n\n\n\n\nweights\n\n\narray-like\n\n\nList of net weights.\n\n\n\n\n\n\nbiases\n\n\narray-like\n\n\nList of net biases.\n\n\n\n\n\n\ninput_state\n\n\nTensorFlow node\n\n\nPlaceholder for input state.\n\n\n\n\n\n\n\n\n# Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\nlayers, weights, biases, input_state = pol_grad.setup_net(net_dims)\n\n\n\n\nestimate_q(self, states, actions, rewards, net_dims=None)\n\n\nEstimates the q-values for a trajectory based on the intermediate rewards.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nstates\n\n\narray-like\n\n\nList of list of input states.\n\n\n\n\n\n\nactions\n\n\narray-like\n\n\nList of list of input actions.\n\n\n\n\n\n\nrewards\n\n\narray-like\n\n\nList of list of input rewards.\n\n\n\n\n\n\nnet_dims\n\n\narray-like\n\n\nList of dimensions for layers of net. Defaults to three layer net, with dimensions  x, 2x, 1.5x, 1 respectively where x is the length of the trajectory.\n\n\n\n\n\n\n\n\nOutputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nq\n\n\narray-like\n\n\nEstimated q-values.\n\n\n\n\n\n\n\n\n# Obtain traj_states, traj_actions, rewards through environment\nq_value_lists = pol_grad.estimate_q(states, actions, rewards, net_dims=None)\n\n\n\n\nmeanstd_sample(self, mean, std=1.0)\n\n\nSamples an action based on the input probability distribution.\n\n\nInputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nmean\n\n\narray-like\n\n\nInput mean of action distribution.\n\n\n\n\n\n\nstd\n\n\nfloat\n\n\nStandard deviation of action distribution.\n\n\n\n\n\n\n\n\nOutputs\n\n\n\n\n\n\n\n\nParameter\n\n\nType\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nsample_action\n\n\narray-like\n\n\nAction sampled from given distribution.\n\n\n\n\n\n\n\n\n# Obtain predicted action through net\nnew_action_mean = pol_grad.sess.run(pol_grad.output_mean, feed_dict={self.input_state: state})\naction_sampled = pol_grad.meanstd_sample(mean, std=1.0)", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#introduction", 
+            "text": "Python implementation of policy gradient reinforcement learning methods, built on TensorFlow.   Flexible reinforcement learning framework that does not require dynamics of the environment.   Given a sequence of state-action pairs and rewards, adjusts policy based on gradient steps with respect to its parameters.   Interface designed to minimize the amount of developer interaction needed.", 
+            "title": "Introduction"
+        }, 
+        {
+            "location": "/#installation", 
+            "text": "pip install -i https://testpypi.python.org/pypi policy_gradient   Quick installation using the pip package manager. \nDependencies: NumPy, TensorFlow, Nose", 
+            "title": "Installation"
+        }, 
+        {
+            "location": "/#interface", 
+            "text": "Quick, clean interface for training a neural network using policy gradient methods.  Designed to minimize the amount of interaction with the interface.   Just initialize the learner, pass in the dynamics/rewards functions and the initial state,\nand you're good to go!  # Initialize learner\nlearner = PolicyGradient(net_dims, 'tanh')\n# Train policy\nlearner.train_agent(dynamics_func, reward_func, initial_state)\n# Retrieve predicted best actions based on learned policy\nlearner.get_action(new_state)", 
+            "title": "Interface"
+        }, 
+        {
+            "location": "/#main-functions", 
+            "text": "Calculates policy gradient for given input state/actions.  Users should primarily be calling main PolicyGradient class methods.", 
+            "title": "Main Functions"
+        }, 
+        {
+            "location": "/#9595init9595self-net_dims-output_functionnone", 
+            "text": "Initializes PolicyGradient class.", 
+            "title": "__init__(self, net_dims, output_function=None)"
+        }, 
+        {
+            "location": "/#inputs", 
+            "text": "Parameter  Type  Description      net_dims  array-like  1D list corresponding to dimensions of each layer in the net.    output_function  string  Non-linearity function applied to output of neural network. Options are: 'tanh', 'sigmoid', 'relu'.     # Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\npol_grad = PolicyGradient(net_dims, output_function='tanh')", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#train_agentself-dynamics_func-reward_func-initial_state-num_iters-batch_size-traj_len-step_size01-momentum05-normalizetrue", 
+            "text": "Trains agent using input dynamics and rewards functions.", 
+            "title": "train_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, step_size=0.1, momentum=0.5, normalize=True)"
+        }, 
+        {
+            "location": "/#inputs_1", 
+            "text": "Parameter  Type  Description      dynamics_func  function  User-provided function that takes in a state and action, and returns the next state.    reward_func  function  User-provided function that takes in a state and action, and returns the associated reward.    initial_state  array-like  Initial state that each trajectory starts at. Must be 1-dimensional NumPy array.    num_iters  int  Number of iterations to run gradient updates.    batch_size  int  Number of trajectories to run in a single iteration.    traj_len  int  Number of state-action pairs in a trajectory.", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#outputs", 
+            "text": "Parameter  Type  Description      mean_rewards  array-like  Mean ending rewards of all iterations.     # Setup initial state\ninitial_state = np.zeros((5, 5))\nmean_rewards = pol_grad.train_agent(dynamics_func, reward_func, initial_state=initial_state, \\\n    num_iters=100, batch_size=50, traj_len=10)", 
+            "title": "Outputs"
+        }, 
+        {
+            "location": "/#gradient_updateself-traj_states-traj_actions-rewards-step_size-momentum-normalize", 
+            "text": "Estimates and applies gradient update according to a policy.  States, actions, rewards must be lists of lists; first dimension indexes\nthe ith trajectory, second dimension indexes the jth state-action-reward of that\ntrajectory.", 
+            "title": "gradient_update(self, traj_states, traj_actions, rewards, step_size, momentum, normalize)"
+        }, 
+        {
+            "location": "/#inputs_2", 
+            "text": "Parameter  Type  Description      traj_states  array-like  List of list of states.    traj_actions  array-like  List of list of actions.    rewards  array-like  List of list of rewards.    step_size  float  Step size.    momentum  float  Momentum value.    normalize  boolean  Determines whether to normalize gradient update. Recommended if running into NaN/infinite value errors.     # Obtain traj_states, traj_actions, rewards through environment\npol_grad.gradient_update(traj_states, traj_actions, rewards)", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#get_actionself-state", 
+            "text": "Returns action based on input state.", 
+            "title": "get_action(self, state)"
+        }, 
+        {
+            "location": "/#inputs_3", 
+            "text": "Parameter  Type  Description      state  array-like  Input state.", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#outputs_1", 
+            "text": "Parameter  Type  Description      action  array-like  Predicted action.     # Arbitrary input state\nnew_state = np.array([[10,20],[20,10]])\nnext_action = pol_grad.get_action(new_state)", 
+            "title": "Outputs"
+        }, 
+        {
+            "location": "/#utility-functions", 
+            "text": "", 
+            "title": "Utility Functions"
+        }, 
+        {
+            "location": "/#init_neural_netself-net_dims-output_functionnone", 
+            "text": "Sets up neural network for policy gradient.", 
+            "title": "init_neural_net(self, net_dims, output_function=None)"
+        }, 
+        {
+            "location": "/#inputs_4", 
+            "text": "Parameter  Type  Description      net_dims  array-like  List of dimensions for layers of net.    output_function  string  Non-linearity function applied to output of neural network. Options are: 'tanh', 'sigmoid', 'relu'.     # Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\npol_grad.init_neural_net(net_dims, output_function=None)", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#setup_netself-net_dims", 
+            "text": "Initializes TensorFlow neural net with input net dimensions.", 
+            "title": "setup_net(self, net_dims)"
+        }, 
+        {
+            "location": "/#inputs_5", 
+            "text": "Parameter  Type  Description      net_dims  array-like  List of dimensions for layers of net.", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#outputs_2", 
+            "text": "Parameter  Type  Description      layers  array-like  List of TensorFlow nodes corresponding to layers of net.    weights  array-like  List of net weights.    biases  array-like  List of net biases.    input_state  TensorFlow node  Placeholder for input state.     # Dimensions of net\nnet_dims = np.array([10,25,15,5,1])\nlayers, weights, biases, input_state = pol_grad.setup_net(net_dims)", 
+            "title": "Outputs"
+        }, 
+        {
+            "location": "/#estimate_qself-states-actions-rewards-net_dimsnone", 
+            "text": "Estimates the q-values for a trajectory based on the intermediate rewards.", 
+            "title": "estimate_q(self, states, actions, rewards, net_dims=None)"
+        }, 
+        {
+            "location": "/#inputs_6", 
+            "text": "Parameter  Type  Description      states  array-like  List of list of input states.    actions  array-like  List of list of input actions.    rewards  array-like  List of list of input rewards.    net_dims  array-like  List of dimensions for layers of net. Defaults to three layer net, with dimensions  x, 2x, 1.5x, 1 respectively where x is the length of the trajectory.", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#outputs_3", 
+            "text": "Parameter  Type  Description      q  array-like  Estimated q-values.     # Obtain traj_states, traj_actions, rewards through environment\nq_value_lists = pol_grad.estimate_q(states, actions, rewards, net_dims=None)", 
+            "title": "Outputs"
+        }, 
+        {
+            "location": "/#meanstd_sampleself-mean-std10", 
+            "text": "Samples an action based on the input probability distribution.", 
+            "title": "meanstd_sample(self, mean, std=1.0)"
+        }, 
+        {
+            "location": "/#inputs_7", 
+            "text": "Parameter  Type  Description      mean  array-like  Input mean of action distribution.    std  float  Standard deviation of action distribution.", 
+            "title": "Inputs"
+        }, 
+        {
+            "location": "/#outputs_4", 
+            "text": "Parameter  Type  Description      sample_action  array-like  Action sampled from given distribution.     # Obtain predicted action through net\nnew_action_mean = pol_grad.sess.run(pol_grad.output_mean, feed_dict={self.input_state: state})\naction_sampled = pol_grad.meanstd_sample(mean, std=1.0)", 
+            "title": "Outputs"
+        }
+    ]
+}
