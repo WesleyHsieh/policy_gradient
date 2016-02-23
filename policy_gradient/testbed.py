@@ -10,7 +10,7 @@ class Testbed(testclass.TestClass):
 	"""
 	Simple testbed for policy gradient.
 	"""
-	def __init__(self, A=None, B=None, goal_state=None, net_dims=None):
+	def __init__(self, A=None, B=None, goal_state=None, net_dims=None, obstacles=None):
 		"""
 		Initializes dynamics of environment.
 
@@ -23,8 +23,9 @@ class Testbed(testclass.TestClass):
 		self.A = A if A is not None else np.diag(np.ones(2)) 
 		self.B = B if B is not None else np.diag(np.ones(2))
 		self.goal_state = goal_state if goal_state is not None else np.array([10,10]).reshape(2,1)
-		self.net_dims = net_dims if net_dims is not None else [2,6,4,3,2]
+		self.net_dims = net_dims if net_dims is not None else [2,4,3,2]
 		self.learner = policy_gradient.PolicyGradient(net_dims=self.net_dims, output_function='tanh')
+		self.obstacles = obstacles
 
 	def calculate_next_state(self, state, action):
 		"""
@@ -95,17 +96,46 @@ class Testbed(testclass.TestClass):
 		plt.xlabel('Number of Iterations')
 		plt.ylabel('Mean Ending Distance from Goal')
 		plt.title('Policy Gradient Learning')
-		plt.savefig("policy_gradient_{}_numiters_{}_batchsize.pdf".format(num_iters, batch_size))
+		plt.savefig("figures/policy_gradient_{}_numiters_{}_batchsize.pdf".format(num_iters, batch_size))
 
+	def cross_validate(self, step_size, momentum, net_dims, q_net_dims, update_method, seed_state, num_iters=50, batch_size=50, traj_len=20, seed=0):
+
+		learner = policy_gradient.PolicyGradient(net_dims=net_dims, q_net_dims=q_net_dims, output_function='tanh', seed=seed, seed_state=seed_state)
+		initial_state = np.zeros((self.A.shape[0], 1))
+		mean_rewards, ending_states = learner.train_agent(dynamics_func=self.calculate_next_state, reward_func=self.reward_function, \
+			update_method=update_method, initial_state=initial_state, num_iters=num_iters, batch_size=batch_size, traj_len=traj_len, \
+			step_size=step_size, momentum=momentum, normalize=False)
+		mean_ending_states = np.mean(ending_states, axis=1)
+		mean_ending_distances = [la.norm(s - self.goal_state) for s in mean_ending_states]
+		return mean_ending_distances
+
+
+# Cross-Validate step size, momentum, neural net params, learned q function, lbfgs
+# Plot how performance scales with num_iters, batch_size, goal state distance
 if __name__ == '__main__':
-	start_time = time.clock()
-	testbed = Testbed(goal_state = np.array([10,10]))
-	# print "Running Test Suite."
-	# call(["nosetests", "-v", "testbed.py"])
+	np.random.seed(0)
+	st0 = np.random.get_state()
+	testbed = Testbed(goal_state = np.array([20,20]))
 	print "Running Performance Test."
+	update_method_list = ['sgd', 'momentum', 'lbfgs', 'adagrad', 'rmsprop', 'adam']
+	seeds = [0]
 	num_iters = 50
 	batch_size = 50
-	testbed.performance_check(num_iters, batch_size)
-	end_time = time.clock()
-	total_time = end_time - start_time
-	print "{} seconds elapsed for {} iterations of {} rollouts each.".format(total_time, num_iters, batch_size)
+	step_size = 0.1
+	momentum = 0.5 
+	net_dims = [2,4,3,2]
+	q_net_dims = None
+	plt.figure()
+	plt.xlabel('Number of Iterations')
+	plt.ylabel('Mean Ending Distance from Goal')
+	plt.title('Policy Gradient Learning')
+	for update_method in update_method_list:
+		distance_list = []
+		for i in range(5):
+			mean_ending_distances = testbed.cross_validate(step_size, momentum, net_dims, q_net_dims, update_method, st0, num_iters, batch_size, seed=0)
+			distance_list.append(mean_ending_distances)
+		distance_list = np.mean(np.array(distance_list), axis=0)
+		plt.plot(range(len(distance_list)), distance_list, label='update_method={}'.format(update_method))
+
+	plt.legend()
+	plt.savefig("figures/policy_gradient_iters.pdf")

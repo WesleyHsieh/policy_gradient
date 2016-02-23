@@ -120,18 +120,23 @@ class Utils:
 			return reshaped_output_q
 		else:
 			return q
-		
-		# print "states", states.shape
-		# print "actions", actions.shape
-		# print "rewards", rewards.shape
-		# print "traj_flattened", traj_flattened.shape
-		# print "traj_reshaped", traj_reshaped.shape
-		# print "output_state", output_state.get_shape().as_list()
-		# print "l2", l2_loss.get_shape().as_list()
-		# print "output_q", output_q.shape
-		# print "reshaped_output_q", reshaped_output_q.shape
 
-		
+	def bfgs_update(self, prev_inverse_hess, update_x, prev_grad, curr_grad):
+		s = update_x
+		y = curr_grad - prev_grad
+		b = prev_inverse_hess
+
+		t1 = np.div(np.dot(s, y.T), np.dot(y.T, s))
+		t2 = np.div(np.dot(y, s.T), np.dot(y.T, s))
+		t3 = np.div(np.dot(s, s.T), np.dot(y.T, s))
+
+		t1 = np.eye(t1.shape) - t1
+		t2 = np.eye(t2.shape) - t2
+		curr_inverse_hess = np.dot(np.dot(t1, b), t2) + t3
+
+		update_val = -np.dot(curr_inverse_hess, curr_grad)
+		return update_val, curr_inverse_hess
+
 
 	def init_action_neural_net(self, net_dims, output_function=None):
 		"""
@@ -174,20 +179,10 @@ class Utils:
 		self.weight_grads = tf.gradients(prob_q, self.weights)
 		self.bias_grads = tf.gradients(prob_q, self.biases)
 
-		# print "self.output_mean", self.output_mean.get_shape().as_list()
-		# print "norm_diff", norm_diff.get_shape().as_list()
-		# print "log_prob_output", log_prob_output.get_shape().as_list()
-		# print "q_val", self.q_val.get_shape().as_list()
-		# print "prob_q", prob_q.get_shape().as_list()
-		# print "self.weights", [x.get_shape().as_list() for x in self.weights]
-		# print "self.weight_grads", [x.get_shape().as_list() for x in self.weight_grads]
-
 		# Initialize variables, session
 		init = tf.initialize_all_variables()
 		self.sess = tf.Session()
 		self.sess.run(init)
-
-	# def init_q_neural_net(self, net_dims, initial_state):
 
 
 	def meanstd_sample(self, mean, std=1.0):

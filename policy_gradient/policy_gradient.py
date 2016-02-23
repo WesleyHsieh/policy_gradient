@@ -16,7 +16,7 @@ class PolicyGradient(Utils):
 	PolicyGradient class methods.
 	"""
 
-	def __init__(self, net_dims, q_net_dims=None, output_function=None):
+	def __init__(self, net_dims, q_net_dims=None, output_function=None, seed=0, seed_state=None):
 		"""
 		Initializes PolicyGradient class.
 
@@ -29,11 +29,18 @@ class PolicyGradient(Utils):
 			neural network. 
 			Options are: 'tanh', 'sigmoid', 'relu', 'softmax'.
 		"""
-		self.prev_weight_update = self.prev_bias_update = None
-		self.init_action_neural_net(net_dims, output_function)
 		
+		self.prev_weight_grad = self.prev_bias_grad = self.prev_weight_update_vals = \
+		self.prev_bias_update_vals = self.prev_weight_inverse_hess = self.prev_bias_inverse_hess = \
+		self.total_weight_grad = self.total_bias_grad = None
 
-	def train_agent(self, dynamics_func, reward_func, initial_state, num_iters, batch_size, traj_len, \
+		self.init_action_neural_net(net_dims, output_function)
+		if seed_state is not None:
+			np.random.set_state(seed_state)
+		tf.set_random_seed(seed)
+
+
+	def train_agent(self, dynamics_func, reward_func, update_method, initial_state, num_iters, batch_size, traj_len, \
 			step_size=0.1, momentum=0.5, normalize=True):
 		"""
 		Trains agent using input dynamics and rewards functions.
@@ -91,12 +98,12 @@ class PolicyGradient(Utils):
 
 			# Apply policy gradient iteration
 			self.gradient_update(np.array(traj_states), np.array(traj_actions), np.array(rewards), \
-					step_size, momentum, normalize)
+					update_method, step_size, momentum, normalize)
 			mean_rewards.append(np.mean([np.sum(reward_list) for reward_list in rewards]))
 			ending_states.append([traj[-1] for traj in traj_states])
 		return np.array(mean_rewards), ending_states
 
-	def gradient_update(self, traj_states, traj_actions, rewards, step_size=0.1, momentum=0.5, normalize=True):
+	def gradient_update(self, traj_states, traj_actions, rewards, update_method, step_size=1.0, momentum=0.5, normalize=True):
 		"""
 		Estimates and applies gradient update according to a policy.
 
@@ -119,9 +126,15 @@ class PolicyGradient(Utils):
 			Determines whether to normalize gradient update. 
 			Recommended if running into NaN/infinite value errors.
 		"""
+		assert update_method in ['sgd', 'momentum', 'lbfgs', 'adagrad', 'rmsprop', 'adam']
 		# Calculate updates and create update pairs
-		weight_update = 0
-		bias_update = 0
+		curr_weight_grad = 0
+		curr_bias_grad = 0
+		curr_weight_update_vals = []
+		curr_bias_update_vals = []
+		curr_weight_inverse_hess = []
+		curr_bias_inverse_hess = []
+
 		iters = traj_states.shape[0]
 		q_vals = self.estimate_q(traj_states, traj_actions, rewards)
 		assert traj_states.shape[0] == traj_actions.shape[0] == rewards.shape[0]
@@ -137,42 +150,127 @@ class PolicyGradient(Utils):
 			curr_traj_actions = curr_traj_actions.reshape(curr_traj_actions.shape[0], curr_traj_actions.shape[1] * curr_traj_actions.shape[2])
 			curr_q_val_list = curr_q_val_list.reshape(curr_q_val_list.shape[0], 1)
 
-			weight_update_vals = self.sess.run(self.weight_grads, \
+			curr_weight_grad_vals = self.sess.run(self.weight_grads, \
 					feed_dict={self.input_state: curr_traj_states, self.observed_action: curr_traj_actions, self.q_val: curr_q_val_list})
-			bias_update_vals = self.sess.run(self.bias_grads, \
+			curr_bias_grad_vals = self.sess.run(self.bias_grads, \
 					feed_dict={self.input_state: curr_traj_states, self.observed_action: curr_traj_actions, self.q_val: curr_q_val_list})
 
-			weight_update += np.array(weight_update_vals) / np.float(iters)
-			bias_update += np.array(bias_update_vals) / np.float(iters)
+			curr_weight_grad += np.array(curr_weight_grad_vals) / np.float(iters)
+			curr_bias_grad += np.array(curr_bias_grad_vals) / np.float(iters)
 
 		# Update weights
 		for j in range(len(self.weights)):
-			# Normalize gradient
-			update_val = weight_update[j]
+			if update_method == 'sgd':
+				update_val = step_size * curr_weight_grad[j]
+
+			elif update_method == 'momentum':
+				if self.prev_weight_grad is None:
+					update_val = step_size * curr_weight_grad[j]
+				else:
+					update_val = momentum * self.prev_weight_grad[j] +  step_size * curr_weight_grad[j]
+
+			elif update_method == 'lbfgs':
+				if self.prev_weight_inverse_hess is None:
+					curr_inverse_hess = np.eye(curr_weight_grad[j].shape[0])
+					update_val = curr_weight_grad[j]
+				else: 
+					update_val, curr_inverse_hess = \
+						self.bfgs_update(self.prev_inverse_hess[j], self.prev_update_val[j], self.prev_weight_grad[j], update_val)
+				update_val = update_val * step_size 
+				curr_weight_inverse_hess.append(curr_inverse_hess)
+
+			elif update_method == 'adagrad':
+				if self.total_weight_grad is None:
+					self.total_weight_grad = curr_weight_grad
+				else:
+					self.total_weight_grad[j] += np.square(curr_weight_grad[j])
+				update_val = step_size * curr_weight_grad[j] / (np.sqrt(np.abs(self.total_weight_grad[j])) + 1e-8)
+
+			elif update_method == 'rmsprop':
+				decay = 0.99
+				if self.total_weight_grad is None:
+					self.total_weight_grad = curr_weight_grad
+				else:
+					self.total_weight_grad[j] = decay * self.total_weight_grad[j] + (1 - decay) * np.square(curr_weight_grad[j])
+				update_val = step_size * curr_weight_grad[j] / (np.sqrt(np.abs(self.total_weight_grad[j])) + 1e-8)
+
+			elif update_method == 'adam':
+				beta1, beta2 = 0.9, 0.999
+				if self.total_weight_grad is None:
+					self.total_weight_grad = curr_weight_grad
+					self.total_sq_weight_grad = np.square(curr_weight_grad)
+				else:
+					self.total_weight_grad[j] = beta1 * self.total_weight_grad[j] + (1 - beta1) * curr_weight_grad[j]
+					self.total_sq_weight_grad[j] = beta2 * self.total_sq_weight_grad[j] + (1 - beta2) * np.sqrt(np.abs(self.total_weight_grad[j]))
+				update_val = np.divide(step_size * self.total_weight_grad[j], (np.sqrt(np.abs(self.total_sq_weight_grad[j])) + 1e-8))
+
 			if normalize:
-				norm = la.norm(weight_update[j])
+				norm = la.norm(update_val)
 				if norm != 0:
-					update_val = weight_update[j] / la.norm(weight_update[j])
-			if momentum != 0 and self.prev_weight_update is not None:
-				update_val += momentum * self.prev_weight_update[j]
-			update = tf.assign(self.weights[j], self.weights[j] + step_size * update_val)
+					update_val = update_val / norm
+			curr_weight_update_vals.append(update_val)
+			update = tf.assign(self.weights[j], self.weights[j] + update_val)
 			self.sess.run(update)
 
 		# Update biases
 		for j in range(len(self.biases)):
-			# Normalize gradient
-			update_val = bias_update[j]
+			if update_method == 'sgd':
+				update_val = step_size * curr_bias_grad[j]
+
+			elif update_method == 'momentum':
+				if self.prev_bias_grad is None:
+					update_val = step_size * curr_bias_grad[j]
+				else:
+					update_val = momentum * self.prev_bias_grad[j] +  step_size * curr_bias_grad[j]
+
+			elif update_method == 'lbfgs':
+				if self.prev_bias_inverse_hess is None:
+					curr_inverse_hess = np.eye(curr_bias_grad[j].shape[0])
+					update_val = curr_bias_grad[j]
+				else: 
+					update_val, curr_inverse_hess = \
+						self.bfgs_update(self.prev_inverse_hess[j], self.prev_update_val[j], self.prev_bias_grad[j], update_val)
+				update_val = update_val * step_size 
+				curr_bias_inverse_hess.append(curr_inverse_hess)
+
+			elif update_method == 'adagrad':
+				if self.total_bias_grad is None:
+					self.total_bias_grad = curr_bias_grad
+				else:
+					self.total_bias_grad[j] += np.square(curr_bias_grad[j])
+				update_val = step_size * curr_bias_grad[j] / (np.sqrt(np.abs(self.total_bias_grad[j])) + 1e-8)
+
+			elif update_method == 'rmsprop':
+				decay = 0.99
+				if self.total_bias_grad is None:
+					self.total_bias_grad = curr_bias_grad
+				else:
+					self.total_bias_grad[j] = decay * self.total_bias_grad[j] + (1 - decay) * np.square(curr_bias_grad[j])
+				update_val = step_size * curr_bias_grad[j] / (np.sqrt(np.abs(self.total_bias_grad[j])) + 1e-8)
+
+			elif update_method == 'adam':
+				beta1, beta2 = 0.9, 0.999
+				if self.total_bias_grad is None:
+					self.total_bias_grad = curr_bias_grad
+					self.total_sq_bias_grad = np.square(curr_bias_grad)
+				else:
+					self.total_bias_grad[j] = beta1 * self.total_bias_grad[j] + (1 - beta1) * curr_bias_grad[j]
+					self.total_sq_bias_grad[j] = beta2 * self.total_sq_bias_grad[j] + (1 - beta2) * np.sqrt(np.abs(self.total_bias_grad[j]))
+				update_val = np.divide(step_size * self.total_bias_grad[j], (np.sqrt(np.abs(self.total_sq_bias_grad[j])) + 1e-8))
+
 			if normalize:
-				norm = la.norm(bias_update[j])
+				norm = la.norm(update_val)
 				if norm != 0:
-					update_val = bias_update[j] / la.norm(bias_update[j])
-			if momentum != 0 and self.prev_bias_update is not None:
-				update_val += momentum * self.prev_bias_update[j]
-			update = tf.assign(self.biases[j], self.biases[j] + step_size * update_val)
+					update_val = update_val / norm
+			curr_bias_update_vals.append(update_val)
+			update = tf.assign(self.biases[j], self.biases[j] + update_val)
 			self.sess.run(update)
 
-		self.prev_weight_update = weight_update
-		self.prev_bias_update = bias_update
+		self.prev_weight_grad = curr_weight_grad
+		self.prev_bias_grad = curr_bias_grad
+		self.prev_weight_update_vals = curr_weight_update_vals
+		self.prev_bias_update_vals = curr_weight_update_vals
+
 
 	def get_action(self, state):
 		"""
