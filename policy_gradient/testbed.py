@@ -131,7 +131,7 @@ if __name__ == '__main__':
 	plt.title('Policy Gradient Learning')
 	for update_method in update_method_list:
 		distance_list = []
-		for i in range(5):
+		for i in range(1):
 			mean_ending_distances = testbed.cross_validate(step_size, momentum, net_dims, q_net_dims, update_method, st0, num_iters, batch_size, seed=0)
 			distance_list.append(mean_ending_distances)
 		distance_list = np.mean(np.array(distance_list), axis=0)
