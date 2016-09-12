@@ -5,6 +5,7 @@ import IPython
 import tensorflow as tf
 from utils import *
 import time
+from collections import defaultdict
 
 class PolicyGradient(Utils):
 
@@ -16,7 +17,7 @@ class PolicyGradient(Utils):
 	PolicyGradient class methods.
 	"""
 
-	def __init__(self, net_dims, q_net_dims=None, output_function=None, seed=0, seed_state=None):
+	def __init__(self, net_dims, filepath=None, q_net_dims=None, output_function=None, seed=0, seed_state=None):
 		"""
 		Initializes PolicyGradient class.
 
@@ -29,19 +30,18 @@ class PolicyGradient(Utils):
 			neural network. 
 			Options are: 'tanh', 'sigmoid', 'relu', 'softmax'.
 		"""
-		
+		self.q_dict = defaultdict(lambda: defaultdict(float))
 		self.prev_weight_grad = self.prev_bias_grad = self.prev_weight_update_vals = \
 		self.prev_bias_update_vals = self.prev_weight_inverse_hess = self.prev_bias_inverse_hess = \
 		self.total_weight_grad = self.total_bias_grad = None
 
-		self.init_action_neural_net(net_dims, output_function)
+		self.init_action_neural_net(net_dims, output_function, filepath)
 		if seed_state is not None:
 			np.random.set_state(seed_state)
 		tf.set_random_seed(seed)
 
 
-	def train_agent(self, dynamics_func, reward_func, update_method, initial_state, num_iters, batch_size, traj_len, \
-			step_size=0.1, momentum=0.5, normalize=True):
+	def train_agent(self, dynamics_func, reward_func, update_method, initial_state, num_iters, batch_size, traj_len, step_size=0.1, momentum=0.5, normalize=True):
 		"""
 		Trains agent using input dynamics and rewards functions.
 
@@ -103,7 +103,7 @@ class PolicyGradient(Utils):
 			ending_states.append([traj[-1] for traj in traj_states])
 		return np.array(mean_rewards), ending_states
 
-	def gradient_update(self, traj_states, traj_actions, rewards, update_method, step_size=1.0, momentum=0.5, normalize=True):
+	def gradient_update(self, traj_states, traj_actions, rewards, update_method='sgd', step_size=1.0, momentum=0.5, normalize=True):
 		"""
 		Estimates and applies gradient update according to a policy.
 

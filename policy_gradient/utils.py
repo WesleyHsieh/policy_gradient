@@ -3,6 +3,10 @@ import numpy.linalg as la
 import collections
 import IPython
 import tensorflow as tf
+from collections import defaultdict
+
+def hash_arr(arr):
+	return tuple(np.ravel(arr))
 
 class Utils:
 	"""
@@ -12,6 +16,8 @@ class Utils:
 	Users should primarily be calling main
 	PolicyGradient class methods.
 	"""
+
+
 	def setup_net(self, net_dims):
 		"""
 		Initializes TensorFlow neural net 
@@ -54,7 +60,7 @@ class Utils:
 		assert len(layers) == len(net_dims)
 		return layers, weights, biases, input_state
 
-	def estimate_q(self, states, actions, rewards, net_dims=None, net=False):
+	def estimate_q(self, states, actions, rewards, learning_rate=0.8, discount=0.8, net_dims=None, net=False):
 		"""
 		Estimates the q-values for a trajectory
 		based on the intermediate rewards.
@@ -79,16 +85,26 @@ class Utils:
 		q: array-like
 			Estimated q-values.
 		"""
+		for i in range(states.shape[0]):
+			for j in range(states[i].shape[0]):
+				curr_state, curr_action, curr_reward = hash_arr(states[i][j]), hash_arr(actions[i][j]), rewards[i][j]
+				if j == states[i].shape[0] - 1:
+					curr_q = self.q_dict[curr_state][curr_action]
+					self.q_dict[curr_state][curr_action] += learning_rate * curr_reward
+				else:
+					next_state = hash_arr(states[i][j+1])
+					curr_q = self.q_dict[curr_state][curr_action]
+					next_q = max(np.max(self.q_dict[next_state].values()), 0.0) if self.q_dict[next_state] else 0.0
+					self.q_dict[curr_state][curr_action] += learning_rate * (curr_reward + discount * next_q - curr_q)
 		q = []
 		for i in range(rewards.shape[0]):
-			curr_reward_list = rewards[i]
 			curr_q_list = []
-			curr_q_val = 0
 			# Compute q-values backwards
-			for j in range(rewards.shape[1])[::-1]:
-				curr_q_val += curr_reward_list[j]
+			for j in range(rewards.shape[1]):
+				curr_state, curr_action = states[i][j], actions[i][j]
+				curr_q_val = self.q_dict[hash_arr(curr_state)][hash_arr(curr_action)]
 				curr_q_list.append(curr_q_val)
-			q.append(curr_q_list[::-1])
+			q.append(curr_q_list)
 		q = np.array(q)
 
 		if net:
@@ -138,7 +154,7 @@ class Utils:
 		return update_val, curr_inverse_hess
 
 
-	def init_action_neural_net(self, net_dims, output_function=None):
+	def init_action_neural_net(self, net_dims, output_function=None, filepath=None):
 		"""
 		Sets up neural network for policy gradient.
 
@@ -179,11 +195,16 @@ class Utils:
 		self.weight_grads = tf.gradients(prob_q, self.weights)
 		self.bias_grads = tf.gradients(prob_q, self.biases)
 
+
 		# Initialize variables, session
 		init = tf.initialize_all_variables()
 		self.sess = tf.Session()
 		self.sess.run(init)
 
+
+		if filepath:
+			ckpt = tf.train.get_checkpoint_state(filepath)
+			saver.restore(sess, ckpt.model_checkpoint_path)
 
 	def meanstd_sample(self, mean, std=1.0):
 		"""

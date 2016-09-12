@@ -117,7 +117,7 @@ if __name__ == '__main__':
 	st0 = np.random.get_state()
 	testbed = Testbed(goal_state = np.array([20,20]))
 	print "Running Performance Test."
-	update_method_list = ['sgd', 'momentum', 'lbfgs', 'adagrad', 'rmsprop', 'adam']
+	update_method_list = ['sgd']#, 'momentum', 'lbfgs', 'adagrad', 'rmsprop', 'adam']
 	seeds = [0]
 	num_iters = 50
 	batch_size = 50
